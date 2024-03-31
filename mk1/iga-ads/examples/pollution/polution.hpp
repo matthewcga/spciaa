@@ -89,20 +89,22 @@ private:
       return -5.2;
     }
 
+    const int max_iter = 30'000;
     const int cannon_shot_time = 7'000;
     const double cannon_strength = 0.1;
     const double cone_limiter = 2.0;
+    const double max_alpha = pi / 4;
     // the bigger the value the smaller the cone
 
     double cannon(double x, double y, int iter) {
-        double time = (iter - cannon_shot_time) / 30; // slows time
-
-        if (time < 0.0)
+        if (iter - cannon_shot_time)
             return 0.0;
 
+        double time = (iter - cannon_shot_time)
+            / (max_iter - cannon_shot_time);
         double alpha_rad = std::atan(x / time);
 
-        if (alpha_rad >= pi / 4) // if alpha > 45 deg
+        if (alpha_rad >= max_alpha)
             return 0.0;
 
         double y_prim = x / std::tan(alpha_rad);
