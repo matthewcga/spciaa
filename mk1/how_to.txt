@@ -1,0 +1,43 @@
+BUILDING PROJECT ######################
+
+1.
+wsl
+
+2.
+DEPS=$(realpath deps)
+
+3.
+cd iga-ads/
+
+4.
+rm -r build/
+
+5.
+mkdir build
+
+6.  	
+cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D ADS_USE_GALOIS=ON -D USE_MUMPS=OFF -D CMAKE_PREFIX_PATH="${DEPS}"
+
+7.
+cmake --build build -j $(nproc)
+
+CREATE GIF ############################
+1.
+cd ../results/data/
+
+2.
+./../../iga-ads/build/examples/pollution_mk2
+
+3.
+exit
+
+4.
+cd ..
+
+5.
+python .\script.py
+
+6.
+https://ezgif.com/maker
+* delay time 5 !
+* dont stack frames !

@@ -1,0 +1,6 @@
+mk1/results/imgs/*
+mk1/results/data/*
+mk1/deps/*
+mk1/deps-build/*
+mk1/iga-ads/*
+!mk1/iga-ads/examples
