@@ -27,7 +27,7 @@ public:
     , u_prev{shape()}
     , output{x.B, y.B, 200} { }
 
-    double init_state(double x, double y) {
+    double init_state(double /*x*/, double /*y*/) {
         return 0;
         // double dx = x - 0.5;
         // double dy = y - 0.5;
@@ -36,6 +36,7 @@ public:
     };
 
 private:
+    const double pi = 3.14159265358979;
 
     void prepare_matrices() {
         y.fix_left();
@@ -59,12 +60,12 @@ private:
         swap(u, u_prev);
         const double d = 0.7;
         const double c = 10000;
-        s = std::max(((cos(iter * 3.14159265358979 / c) - d) * 1 / (1-d)), 0.);
+        s = std::max(((cos(iter * pi / c) - d) * 1 / (1-d)), 0.);
         std::cout << "\r" << iter << "/" << iterations << " (s=" << s << ")                          \r";
     }
 
-    void step(int /*iter*/, double /*t*/) override {
-        compute_rhs();
+    void step(int iter, double /*t*/) override {
+        compute_rhs(iter);
         solve(u);
     }
 
@@ -88,8 +89,35 @@ private:
       return -5.2;
     }
 
+    const int cannon_shot_time = 7'000;
+    const double cannon_strength = 0.1;
+    const double cone_limiter = 2.0;
+    // the bigger the value the smaller the cone
+
+    double cannon(double x, double y, int iter) {
+        double time = (iter - cannon_shot_time) / 30; // slows time
+
+        if (time < 0.0)
+            return 0.0;
+
+        double alpha_rad = std::atan(x / time);
+
+        if (alpha_rad >= pi / 4) // if alpha > 45 deg
+            return 0.0;
+
+        double y_prim = x / std::tan(alpha_rad);
+
+        if (y > y_prim) // if y is higher than 'y
+            return 0.0;
+
+        return (1.0 - (y_prim - y))
+             * sin(alpha_rad * 2.0)
+             * cannon_strength;
+    }
+
     const double k_x = 1.0, k_y = 0.1;
-    void compute_rhs() {
+    
+    void compute_rhs(int iter) {
         auto& rhs = u;
 
         zero(rhs);
@@ -101,9 +129,17 @@ private:
                     value_type v = eval_basis(e, q, a);
                     value_type u = eval_fun(u_prev, e, q);
 
-                    double gradient_prod = k_x * u.dx * v.dx + k_y * u.dy * v.dy;
+                    double gradient_prod = std::max(
+                        k_x * u.dx * v.dx
+                        + k_y * u.dy * v.dy
+                        - cannon(e[0], e[1], iter), 0.0);
                     double h = e2h(e[1]);
-                    double val = u.val * v.val - steps.dt * gradient_prod + steps.dt * dTy(h) * u.dy * v.val + steps.dt * f(h) * v.val;
+                    double val =
+                        u.val * v.val
+                        - steps.dt * gradient_prod
+                        + steps.dt * dTy(h) * u.dy * v.val
+                        + steps.dt * f(h) * v.val;
+                    
                     rhs(a[0], a[1]) += val * w * J;
                 }
             }

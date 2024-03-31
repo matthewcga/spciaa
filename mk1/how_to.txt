@@ -9,19 +9,20 @@ DEPS=$(realpath deps)
 3.
 cd iga-ads/
 
-4.
+4. [skip if already built]
 rm -r build/
 
-5.
+5. [skip if already built]
 mkdir build
 
-6.  	
+6. [skip if already built]
 cmake -S . -B build -D CMAKE_BUILD_TYPE=Release -D ADS_USE_GALOIS=ON -D USE_MUMPS=OFF -D CMAKE_PREFIX_PATH="${DEPS}"
 
 7.
 cmake --build build -j $(nproc)
 
 CREATE GIF ############################
+
 1.
 cd ../results/data/
 
@@ -31,7 +32,7 @@ cd ../results/data/
 3.
 exit
 
-4.
+4. [go to results\]
 cd ..
 
 5.

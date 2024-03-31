@@ -30,8 +30,8 @@ def create_heatmap(data_file, save_dir):
     return
 
   # Separate data into x, y, and value columns
-  x = data[:, 1]
-  y = data[:, 0]
+  x = data[:, 0]
+  y = data[:, 1]
   value = data[:, 2]
 
   # Ensure x, y, and value are 1D arrays
@@ -46,7 +46,7 @@ def create_heatmap(data_file, save_dir):
 
   # Create the heatmap
   fig, ax = plt.subplots()
-  heatmap = ax.pcolormesh(X, Y, value_2d, cmap='viridis')  # Use a good colormap
+  heatmap = ax.pcolormesh(Y, X, value_2d, cmap='viridis')  # Use a good colormap
 
   # Add labels and title
   ax.set_xlabel('X')
