@@ -1,6 +1,6 @@
 BUILDING PROJECT ######################
 
-1.
+1. [start in mk1/ or mk2/]
 wsl
 
 2.
@@ -33,12 +33,7 @@ cd ../results/data/
 exit
 
 4. [go to results\]
-cd ..
+cd .\results\
 
 5.
 python .\script.py
-
-6.
-https://ezgif.com/maker
-* delay time 5 !
-* dont stack frames !

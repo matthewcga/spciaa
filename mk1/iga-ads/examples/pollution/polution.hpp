@@ -91,30 +91,40 @@ private:
 
     const int max_iter = 30'000;
     const int cannon_shot_time = 7'000;
-    const double cannon_strength = 0.1;
-    const double cone_limiter = 2.0;
-    const double max_alpha = pi / 4;
-    // the bigger the value the smaller the cone
+    const double cannon_strength = 0.5;
+    const double cone_limiter = 6.0;
+    const double max_alpha = pi / cone_limiter;
+    const double wave_speed = 1.5;
+    const double wave_shortness = 3.0;
+    const double cannon_x_loc = 0.5;
 
     double cannon(double x, double y, int iter) {
-        if (iter - cannon_shot_time)
+        if (iter - cannon_shot_time <= 0)
             return 0.0;
 
         double time = (iter - cannon_shot_time)
-            / (max_iter - cannon_shot_time);
-        double alpha_rad = std::atan(x / time);
+                    / ((max_iter / wave_speed) - cannon_shot_time);
+
+        if (y > time)
+            return 0.0;
+
+        double x_prim = std::abs(cannon_x_loc - x);
+        double alpha_rad = std::atan(x_prim / time);
 
         if (alpha_rad >= max_alpha)
             return 0.0;
 
-        double y_prim = x / std::tan(alpha_rad);
+        double y_prim = std::sqrt(time * time - x_prim * x_prim);
 
         if (y > y_prim) // if y is higher than 'y
             return 0.0;
 
-        return (1.0 - (y_prim - y))
-             * sin(alpha_rad * 2.0)
-             * cannon_strength;
+        return
+          (1.0 - std::min(
+                 std::max(y_prim - y, 0.0) * wave_shortness,
+                 1.0))
+          * std::cos(alpha_rad * cone_limiter * 0.5)
+          * cannon_strength;
     }
 
     const double k_x = 1.0, k_y = 0.1;
