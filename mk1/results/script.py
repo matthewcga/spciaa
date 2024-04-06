@@ -71,10 +71,13 @@ def create_heatmap(data_file, save_dir):
 
 # Function to create a GIF from images
 def create_gif_from_images(images, gif_path):
-    with imageio.get_writer(gif_path, mode="I") as writer:
-        for image_path in images:
+    l = len(images)
+
+    with imageio.get_writer(gif_path, mode="I", loop=0) as writer:
+        for i, image_path in enumerate(images):
             image = imageio.imread(image_path)
             writer.append_data(image)
+            print(f"\r{i+1}/{l}", end="")
 
 
 def get_jpg_files_ordered_by_creation_date(directory):
@@ -107,4 +110,4 @@ new_gif_number = existing_gif_files + 1
 gif_filename = f"animation_{new_gif_number}.gif"
 gif_path = os.path.join(gifs_dir, gif_filename)
 create_gif_from_images(jpg_files, gif_path)
-print(f"Created gif: {gif_filename}")
+print(f"\nCreated gif: {gif_filename}")

@@ -10,7 +10,7 @@
 #include "ads/output_manager.hpp"
 #include "ads/simulation.hpp"
 
-const int iterations = 30000;
+const int iterations = 20'000;
 namespace ads::problems {
 
 class heat_2d : public simulation_2d {
@@ -89,26 +89,34 @@ private:
       return -5.2;
     }
 
-    const int max_iter = 30'000;
-    const int cannon_shot_time = 7'000;
-    const double cannon_strength = 0.5;
+    const int grid_size = 40; // as defined in polution.cpp
+    const int cannon_x_loc = grid_size / 2;
+    const int cannon_shot_time = 3'000;
+    const int cannon_strength_x = 15;
+    const int cannon_strength_y = 10;
     const double cone_limiter = 6.0;
     const double max_alpha = pi / cone_limiter;
-    const double wave_speed = 1.5;
+    const double wave_speed = 2.0;
     const double wave_shortness = 3.0;
-    const double cannon_x_loc = 0.5;
 
-    double cannon(double x, double y, int iter) {
-        if (iter - cannon_shot_time <= 0)
+    double cannon(int x, int y, int iter) {
+        if (iter <= cannon_shot_time)
             return 0.0;
 
-        double time = (iter - cannon_shot_time)
-                    / ((max_iter / wave_speed) - cannon_shot_time);
+        double i_denom = (iterations / wave_speed) - cannon_shot_time;
+        // iteration denominator
+
+        if (i_denom <= 0)
+            return 0.0;
+
+        double time = (iter - cannon_shot_time) * grid_size / i_denom;
+        // time proportion where 0 is canon shot time
+        // and 1 is last frame multiplayed by grid_size
 
         if (y > time)
             return 0.0;
 
-        double x_prim = std::abs(cannon_x_loc - x);
+        int x_prim = std::abs(cannon_x_loc - x);
         double alpha_rad = std::atan(x_prim / time);
 
         if (alpha_rad >= max_alpha)
@@ -116,19 +124,15 @@ private:
 
         double y_prim = std::sqrt(time * time - x_prim * x_prim);
 
-        if (y > y_prim) // if y is higher than 'y
+        if (y > y_prim) // if y is higher than y'
             return 0.0;
 
         return
-          (1.0 - std::min(
-                 std::max(y_prim - y, 0.0) * wave_shortness,
-                 1.0))
-          * std::cos(alpha_rad * cone_limiter * 0.5)
-          * cannon_strength;
+            wave_shortness * (y_prim - y)
+            * std::cos(alpha_rad * cone_limiter * 0.5);
     }
 
     const double k_x = 1.0, k_y = 0.1;
-    
     void compute_rhs(int iter) {
         auto& rhs = u;
 
@@ -141,16 +145,18 @@ private:
                     value_type v = eval_basis(e, q, a);
                     value_type u = eval_fun(u_prev, e, q);
 
-                    double gradient_prod = std::max(
-                        k_x * u.dx * v.dx
-                        + k_y * u.dy * v.dy
-                        - cannon(e[0], e[1], iter), 0.0);
+                    double b = cannon(e[0], e[1], iter);
+                    double bx = (cannon(e[0] - 1, e[1], iter) - b) * cannon_strength_x;
+                    double by = (cannon(e[0], e[1] - 1, iter) - b) * cannon_strength_y;
+                    double gradient_prod = k_x * u.dx * v.dx + k_y * u.dy * v.dy;
                     double h = e2h(e[1]);
                     double val =
                         u.val * v.val
                         - steps.dt * gradient_prod
                         + steps.dt * dTy(h) * u.dy * v.val
-                        + steps.dt * f(h) * v.val;
+                        + steps.dt * f(h) * v.val
+                        - steps.dt * bx * u.dx * v.val  
+                        - steps.dt * by * u.dy * v.val;
                     
                     rhs(a[0], a[1]) += val * w * J;
                 }
