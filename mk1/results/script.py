@@ -49,7 +49,8 @@ def create_heatmap(data_file, save_dir):
 
     # Create the heatmap
     fig, ax = plt.subplots()
-    heatmap = ax.pcolormesh(Y, X, value_2d, cmap="viridis")  # Use a good colormap
+    norm = plt.Normalize(0,1)
+    heatmap = ax.pcolormesh(Y, X, value_2d, cmap="viridis", norm=norm)  # Use a good colormap
 
     # Add labels and title
     ax.set_xlabel("X")

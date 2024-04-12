@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from pathlib import Path
 
-SIZE = 75
-max_iter = 30_000
+SIZE = 100
+max_iter = 10_000
 cannon_shot_time = 7_000
 cannon_strength = 1.0
 cone_limiter = 6.0
@@ -47,12 +47,26 @@ def cannon(x, y, iterr):
         * cannon_strength
     )
 
+def fire_wave(x, y, iterr):
+    t = iterr / 1000
+    a = (t/70)*-10
+    b = (t/70)*-5
+    c = -0.6
+    # wave_strength = 100
+
+    val = (((x * np.cos(c) - y * np.sin(c))**2) / a**2) + (((x*np.cos(c) + y*np.sin(c))**2) / b**2)
+    result = val
+    if val <= 1:
+        return result
+    else:
+        return 0
+
 
 def create_heatmap(i, save_dir):
     increm = 1.0 / SIZE
     data = np.array(
         [
-            [x * increm, y * increm, cannon(x * increm, y * increm, i)]
+            [x * increm, y * increm, fire_wave(x * increm, y * increm, i)]
             for x in range(SIZE)
             for y in range(SIZE)
         ]
@@ -75,18 +89,19 @@ def create_heatmap(i, save_dir):
 
     # Create the heatmap
     fig, ax = plt.subplots()
-    heatmap = ax.pcolormesh(Y, X, value_2d, cmap="viridis")  # Use a good colormap
+    norm = plt.Normalize(1,0)
+    heatmap = ax.pcolormesh(Y, X, value_2d, cmap="viridis", norm=norm)  # Use a good colormap
 
     # Add labels and title
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
-    ax.set_title(f"cannon {i}")
+    ax.set_title(f"test {i}")
 
     # Add colorbar
     fig.colorbar(heatmap, label="Value")
 
     # Create the output filename
-    output_filename = os.path.join(save_dir, f"cannon {i}.jpg")
+    output_filename = os.path.join(save_dir, f"test {i}.jpg")
 
     # Save the heatmap as a PNG with transparency for better visualization
     plt.savefig(output_filename, transparent=False)
