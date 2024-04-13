@@ -3,7 +3,7 @@ BUILDING PROJECT ######################
 1. [start in mk1/ or mk2/]
 wsl
 
-2.
+2. [skip if already built]
 DEPS=$(realpath deps)
 
 3.

@@ -91,13 +91,12 @@ private:
 
     const int grid_size = 40; // as defined in polution.cpp
     const int cannon_x_loc = grid_size / 2;
-    const int cannon_shot_time = 3'000;
-    const int cannon_strength_x = 15;
-    const int cannon_strength_y = 10;
+    const int cannon_shot_time = 6'000;
+    const int cannon_strength_x = 45;
+    const int cannon_strength_y = 30;
     const double cone_limiter = 6.0;
     const double max_alpha = pi / cone_limiter;
     const double wave_speed = 2.0;
-    const double wave_shortness = 3.0;
 
     double cannon(int x, int y, int iter) {
         if (iter <= cannon_shot_time)
@@ -127,9 +126,7 @@ private:
         if (y > y_prim) // if y is higher than y'
             return 0.0;
 
-        return
-            wave_shortness * (y_prim - y)
-            * std::cos(alpha_rad * cone_limiter * 0.5);
+        return (y_prim - y) * std::cos(alpha_rad * cone_limiter * 0.5);
     }
 
     const double k_x = 1.0, k_y = 0.1;
